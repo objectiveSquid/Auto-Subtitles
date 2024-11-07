@@ -1,8 +1,11 @@
 # Auto Subtitles
-A python program for automatically putting subtitles on any media, using Soundcard and VOSK
+A python program for automatically putting subtitles on any media, using Soundcard and VOSK.
+
+## Features
+  - Auto generates subtitles on Linux from the speaker (maybe Windows and MacOS?).
 
 ## Prerequisites
- - Python 3.12+ (Ensure Python and pip are installed on your system)
+  - Python 3.12+ (Ensure Python and pip are installed on your system)
 
 ## Installation
 This project has NOT been tested to work on any Windows/MacOS versions! Though issues/PRs are welcome
