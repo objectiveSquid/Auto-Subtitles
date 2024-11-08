@@ -18,7 +18,7 @@ cd autosubtitles
 ```
 Install the requirements:
 ```sh
-python3.12 -m pip install -r requirements/unix.txt
+python3.12 -m pip install -r requirements.txt
 ```
 And then just run it as such:
 ```sh
@@ -39,5 +39,5 @@ cd yourprojectname
 
 Install the requirements:
 ```sh
-py -3.12 -m pip install -r requirements/windows.txt
+py -3.12 -m pip install -r requirements.txt
 ```

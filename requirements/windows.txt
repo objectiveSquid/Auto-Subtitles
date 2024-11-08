@@ -1,6 +1,0 @@
-vosk
-soundcard
-pillow
-requests
-bs4
-opencv-python
