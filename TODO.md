@@ -1,9 +1,7 @@
 # Todo list
 ## Features
-  - finish readme
-  - more safety checks
-  - fix videoplayer (or scrap it)
   - its slow as shit (optimize)
+  - more safety checks
   - cleaner logging
   - be able to change text size
   - be able to customize transparency of window
