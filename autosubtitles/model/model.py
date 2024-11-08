@@ -89,7 +89,7 @@ def download_model(master: tk.Misc, link: str) -> None:
             if model_size != None:
                 progresswindow.progress_bar.step(len(chunk))
                 progresswindow.progress_label.configure(
-                    text=f"{round(downloaded_content / (1024 * 1024), 1):,}MB/{round(model_size / (1024 * 1024), 1):,}MB"
+                    text=f"{round(downloaded_content / (1024 * 1024)):,}MB/{round(model_size / (1024 * 1024)):,}MB"
                 )
 
             master.update()
