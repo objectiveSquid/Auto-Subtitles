@@ -31,7 +31,7 @@ def find_model_info_by_name(modelname: str) -> ModelInfo | None:
 def load_previous_model() -> SubtitleGenerator | None:
     try:
         with open(previous_model_path, "r") as previous_model_fp:
-            previous_model_name = previous_model_fp.read()
+            previous_model_name = previous_model_fp.read().strip()
     except OSError:
         return
 
