@@ -24,7 +24,7 @@ def resourcepath(name: str) -> str:
 
 
 def write_previous_model_file(modelname: str) -> None:
-    os.makedirs(os.path.split(previous_model_path)[1], exist_ok=True)
+    os.makedirs(os.path.split(previous_model_path)[0], exist_ok=True)
     with open(previous_model_path, "w") as previous_model_fp:
         previous_model_fp.write(modelname)
 
