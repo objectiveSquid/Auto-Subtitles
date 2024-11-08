@@ -1,5 +1,5 @@
-from model.model import get_downloaded_models_info, load_previous_model, scrape_models
 from misc.path import write_previous_model_file, should_run_startwindow, models_path
+from model.model import get_downloaded_models_info, load_previous_model
 from generator.subtitle_generator import SubtitleGenerator
 from window.main_gui import SubtitleWindow
 from window.start import StartWindow

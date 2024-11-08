@@ -22,7 +22,7 @@ class ModelInfo:
 
 
 def find_model_info_by_name(modelname: str) -> ModelInfo | None:
-    for category in scrape_models().values():
+    for category in get_available_models().values():
         for modelinfo in category:
             if modelinfo.name == modelname:
                 return modelinfo
@@ -102,7 +102,7 @@ def download_model(master: tk.Misc, link: str) -> None:
 
 
 @cachetools.cached({})
-def scrape_models() -> dict[str, list[ModelInfo]]:
+def get_available_models() -> dict[str, list[ModelInfo]]:
     models = {}
     latest_group = None
     recasepunc = False

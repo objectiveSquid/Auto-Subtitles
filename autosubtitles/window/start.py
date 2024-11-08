@@ -3,7 +3,7 @@ from __future__ import annotations
 from model.model import (
     find_model_info_by_name,
     download_model,
-    scrape_models,
+    get_available_models,
     ModelInfo,
 )
 from misc.path import create_models_path, resourcepath, models_path
@@ -20,7 +20,7 @@ class StartWindow:
     def __init__(self) -> None:
         self.lines = 0
         self.generator = None
-        scrape_models()
+        get_available_models()
         create_models_path()
 
         self.window = tk.Toplevel(background=_BG_GREY)
@@ -42,12 +42,12 @@ class StartWindow:
         ).pack(fill=tk.X)
 
         self.selected_model_category = tk.StringVar(
-            self.window, value=list(scrape_models().keys())[0]
+            self.window, value=list(get_available_models().keys())[0]
         )
         category_select = ttk.Combobox(
             self.window,
             textvariable=self.selected_model_category,
-            values=list(scrape_models().keys()),
+            values=list(get_available_models().keys()),
         )
         category_select.bind(
             "<KeyRelease>", lambda event: self.__validate_combobox(category_select)
@@ -60,14 +60,16 @@ class StartWindow:
 
         self.selected_model = tk.StringVar(
             self.window,
-            value=scrape_models()[self.selected_model_category.get()][0].name,
+            value=get_available_models()[self.selected_model_category.get()][0].name,
         )
         self.model_select = ttk.Combobox(
             self.window,
             textvariable=self.selected_model,
             values=[
                 modelinfo.name
-                for modelinfo in scrape_models()[self.selected_model_category.get()]
+                for modelinfo in get_available_models()[
+                    self.selected_model_category.get()
+                ]
             ],
         )
         self.model_select.pack()
@@ -92,14 +94,14 @@ class StartWindow:
             category = category.get()
 
         self.model_select["values"] = [
-            modelinfo.name for modelinfo in scrape_models()[category]
+            modelinfo.name for modelinfo in get_available_models()[category]
         ]
         self.selected_model.set(self.model_select["values"][0])
 
     def close(self) -> None:
         self.window.wm_withdraw()
 
-        modelinfo: ModelInfo = find_model_info_by_name(scrape_models(), self.selected_model.get())  # type: ignore
+        modelinfo: ModelInfo = find_model_info_by_name(get_available_models(), self.selected_model.get())  # type: ignore
 
         download_model(self.window, modelinfo.link)
 

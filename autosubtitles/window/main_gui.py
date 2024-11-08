@@ -5,7 +5,7 @@ from model.model import (
     find_model_info_by_name,
     get_downloaded_models,
     download_model,
-    scrape_models,
+    get_available_models,
     ModelInfo,
 )
 from misc.path import (
@@ -33,7 +33,7 @@ class SettingsWindow:
         exit_callback: Callable[[], None],
     ) -> None:
         self.lines = 0
-        scrape_models()
+        get_available_models()
         create_models_path()
 
         self.parent = root
@@ -58,7 +58,7 @@ class SettingsWindow:
         category_select = ttk.Combobox(
             self.window,
             textvariable=self.selected_model_category,
-            values=list(scrape_models().keys()),
+            values=list(get_available_models().keys()),
         )
         # disallow typing
         category_select.bind("<Key>", lambda event: "break")
@@ -79,7 +79,9 @@ class SettingsWindow:
             textvariable=self.selected_model,
             values=[
                 modelinfo.name
-                for modelinfo in scrape_models()[self.selected_model_category.get()]
+                for modelinfo in get_available_models()[
+                    self.selected_model_category.get()
+                ]
             ],
         )
         # disallow typing
@@ -124,7 +126,7 @@ class SettingsWindow:
             category = category.get()
 
         self.model_select["values"] = [
-            modelinfo.name for modelinfo in scrape_models()[category]
+            modelinfo.name for modelinfo in get_available_models()[category]
         ]
         category_model_infos = get_downloaded_models_info(sort=True, category=category)
         if len(category_model_infos) > 0:
