@@ -61,6 +61,7 @@ def get_downloaded_models_info(
 
 
 def download_model(master: tk.Misc, link: str) -> None:
+    download_chunksize = 1024 * 1024  # 1 MB
     modelname = link.removeprefix("https://alphacephei.com/vosk/models/").removesuffix(
         ".zip"
     )
@@ -78,19 +79,15 @@ def download_model(master: tk.Misc, link: str) -> None:
         except ValueError:
             model_size = None
 
-    progresswindow = ProgressWindow(
-        master,
-        None if model_size == None else round(model_size / 1024),
-        modelname,
-    )
+    progresswindow = ProgressWindow(master, model_size, modelname)
 
     with open(temp_zip_file, "wb") as zip_file_fp:
-        for chunk in response.iter_content(1024):
+        for chunk in response.iter_content(download_chunksize):
             zip_file_fp.write(chunk)
             downloaded_content += len(chunk)
 
             if model_size != None:
-                progresswindow.progress_bar.step(1)
+                progresswindow.progress_bar.step(len(chunk))
                 progresswindow.progress_label.configure(
                     text=f"{round(downloaded_content / (1024 * 1024), 1):,}MB/{round(model_size / (1024 * 1024), 1):,}MB"
                 )
