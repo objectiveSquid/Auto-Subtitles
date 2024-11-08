@@ -32,18 +32,6 @@ class ProgressWindow:
         )
         self.loading_label.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
 
-        target_video_width = int(500 / 10)
-        target_video_height = int(500 / 10)
-
-        my_label = tk.Label(master)
-        my_label.place(
-            relx=0.5,
-            rely=0.5,
-            relwidth=target_video_width,
-            relheight=target_video_height,
-            anchor=tk.CENTER,
-        )
-
         if self.progress_length != None:
             self.progress_bar = ttk.Progressbar(
                 self.window, maximum=self.progress_length
