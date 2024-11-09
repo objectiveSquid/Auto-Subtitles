@@ -191,6 +191,9 @@ class SettingsWindow:
                 f"{models_path}/{self.selected_model.get()}", modelinfo
             )
 
+        self.old_modelinfo = modelinfo
+        self.old_font_size = int(self.text_size_value.get())
+
         return new_generator, int(self.text_size_value.get())
 
 
