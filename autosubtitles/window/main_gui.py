@@ -146,6 +146,8 @@ class SettingsWindow:
 
         write_previous_model_file(modelinfo.name)
 
+        if self.current_modelinfo.name == modelinfo.name:
+            return None
         return SubtitleGenerator(
             f"{models_path}/{self.selected_model.get()}", modelinfo
         )
@@ -222,6 +224,8 @@ class SubtitleWindow:
     def __close_settings(self) -> None:
         result = self.settings.close()
         if result != None:
+            self.subtitle_generator.stop()
+
             self.subtitle_generator = result
             self.subtitle_generator.start()
 
