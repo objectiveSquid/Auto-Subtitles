@@ -1,7 +1,6 @@
 # Todo list
 ## Features
   - more safety checks
-  - cleaner logging
   - be able to change text size
   - be able to customize transparency of window
   - change text scrolling
