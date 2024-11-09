@@ -12,3 +12,4 @@
 ## Bugs
   - after closing settings menu the correct model name is not shown once reopened (the model name in previous_model.txt is?)
   - after closing settings menu the main window freeze if you havent set a new model
+  - exit button sometimes doesnt work
