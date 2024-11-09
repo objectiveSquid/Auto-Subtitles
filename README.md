@@ -4,7 +4,7 @@ A python program for automatically putting subtitles on any media, using Soundca
 ## Features
   - Automatically generates subtitles from the system's audio output.
   - Supports Linux, with potential compatibility for Windows and MacOS.
-  - Puts subtitles in a semi-transparent window.
+  - More features coming!
 
 ## Prerequisites
   - Python 3.12+ (Ensure Python and pip are installed on your system)
@@ -15,7 +15,7 @@ This project has NOT been tested to work on any Windows/MacOS versions! Though i
 ### Unix-based OS's (Linux, MacOS...)
 Clone the repository with the git command line:
 ```sh
-git clone https://github.com/objectiveSquid/autosubtitles.git
+git clone https://github.com/objectiveSquid/Autosubtitles.git
 cd autosubtitles
 ```
 Install the requirements:
@@ -29,8 +29,8 @@ python3.12 autosubtitles
 ### Windows
 **If you have Git installed, you can clone the repository:**
 ```sh
-git clone https://github.com/yourusername/yourprojectname.git
-cd yourprojectname
+git clone https://github.com/objectiveSquid/Autosubtitles.git
+cd autosubtitles
 ```
 
 **If you don’t have Git installed, you can download the repository as a ZIP file:**
