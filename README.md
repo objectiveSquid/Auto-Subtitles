@@ -15,7 +15,7 @@ This project has NOT been tested to work on any Windows/MacOS versions! Though i
 ### Unix-based OS's (Linux, MacOS...)
 Clone the repository with the git command line:
 ```sh
-git clone https://github.com/objectiveSquid/autosubtitles.git
+git clone https://github.com/objectiveSquid/Autosubtitles.git
 cd autosubtitles
 ```
 Install the requirements:
@@ -29,7 +29,7 @@ python3.12 autosubtitles
 ### Windows
 **If you have Git installed, you can clone the repository:**
 ```sh
-git clone https://github.com/yourusername/yourprojectname.git
+git clone https://github.com/objectiveSquid/Autosubtitles.git
 cd yourprojectname
 ```
 
