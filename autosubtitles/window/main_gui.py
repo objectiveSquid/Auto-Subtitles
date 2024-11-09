@@ -106,7 +106,7 @@ class SettingsWindow:
             self.window,
             background=_BG_GREY,
             foreground="#FFFFFF",
-            text="Text size",
+            text="Subtitle font size",
         ).pack(fill=tk.X)
 
         self.text_size_value = tk.StringVar(self.window, value=str(current_font_size))
