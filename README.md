@@ -4,7 +4,7 @@ A python program for automatically putting subtitles on any media, using Soundca
 ## Features
   - Automatically generates subtitles from the system's audio output.
   - Supports Linux, with potential compatibility for Windows and MacOS.
-  - Puts subtitles in a semi-transparent window.
+  - More features coming!
 
 ## Prerequisites
   - Python 3.12+ (Ensure Python and pip are installed on your system)
