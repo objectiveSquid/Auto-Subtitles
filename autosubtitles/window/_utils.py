@@ -11,6 +11,5 @@ def seticon(root: tk.Wm, path: str) -> None:
 
 
 def set_font_size(widget: tk.Text, new_size: int) -> None:
-    print(new_size)
     current_font = tk_font.Font(font=widget["font"])
     widget.configure(font=(current_font.actual()["family"], new_size))
