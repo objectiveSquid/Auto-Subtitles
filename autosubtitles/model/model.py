@@ -1,6 +1,7 @@
 from generator.subtitle_generator import SubtitleGenerator
 from misc.path import previous_model_path, models_path
 from window.misc import ProgressWindow
+from misc.other import without
 from misc.zip import unzip
 
 import tkinter as tk
@@ -46,16 +47,23 @@ def get_downloaded_models() -> list[str]:
 def get_downloaded_models_info(
     sort: bool = False,
     category: str | None = None,
-) -> list[ModelInfo | None]:
-    output = [
-        find_model_info_by_name(modelname) for modelname in get_downloaded_models()
-    ]
+) -> list[ModelInfo]:
+    output: list[ModelInfo] = without(
+        [find_model_info_by_name(modelname) for modelname in get_downloaded_models()],
+        None,
+    )  # type: ignore
 
     if category:
-        output = [modelinfo for modelinfo in output if modelinfo.category == category]  # type: ignore
+        output = [modelinfo for modelinfo in output if modelinfo.category == category]
 
     if sort:
-        return sorted(output, key=lambda modelinfo: modelinfo.name)  # type: ignore
+        output = without(
+            sorted(
+                output,
+                key=lambda modelinfo: (modelinfo.name if modelinfo != None else 0),
+            ),
+            0,
+        )
 
     return output
 
