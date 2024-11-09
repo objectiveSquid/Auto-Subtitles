@@ -37,7 +37,11 @@ def load_previous_model() -> SubtitleGenerator | None:
         return
 
     previous_model_info = find_model_info_by_name(previous_model_name)
-    return SubtitleGenerator(f"{models_path}/{previous_model_name}", previous_model_info)  # type: ignore
+    if previous_model_info == None:
+        return
+    return SubtitleGenerator(
+        f"{models_path}/{previous_model_name}", previous_model_info
+    )
 
 
 def get_downloaded_models() -> list[str]:

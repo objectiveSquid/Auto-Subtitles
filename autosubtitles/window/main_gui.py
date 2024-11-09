@@ -130,7 +130,7 @@ class SettingsWindow:
         ]
         category_model_infos = get_downloaded_models_info(sort=True, category=category)
         if len(category_model_infos) > 0:
-            self.selected_model.set(category_model_infos[0].name)  # type: ignore
+            self.selected_model.set(category_model_infos[0].name)
         else:
             self.selected_model.set(self.model_select["values"][0])
 

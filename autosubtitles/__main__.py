@@ -18,11 +18,12 @@ def main() -> None:
         if generator == None:
             fallback_model = get_downloaded_models_info(sort=True)[0]
             tk_messagebox.showerror(
-                "Error in internal files", f'Error loading previously used model, selecting "{fallback_model.name}"'  # type: ignore
+                "Error in internal files",
+                f'Error loading previously used model, selecting "{fallback_model.name}"',
             )
-            write_previous_model_file(fallback_model.name)  # type: ignore
+            write_previous_model_file(fallback_model.name)
             generator = SubtitleGenerator(
-                f"{models_path}/{fallback_model.name}", fallback_model  # type: ignore
+                f"{models_path}/{fallback_model.name}", fallback_model
             )
 
     window = SubtitleWindow(600, 250, generator)
