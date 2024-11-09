@@ -131,9 +131,9 @@ class SettingsWindow:
         ttk.Spinbox(
             self.window,
             textvariable=self.transparency_value,
-            from_=5,
-            to=100,
-            increment=5,
+            from_=0,
+            to=1,
+            increment=0.1,
         ).pack()
 
         # exit button
@@ -183,7 +183,7 @@ class SettingsWindow:
     def close(self) -> None:
         if (
             int(self.text_size_value.get()) != self.old_font_size
-            or int(self.transparency_value.get()) != self.old_transparency
+            or float(self.transparency_value.get()) != self.old_transparency
             or self.old_modelinfo.name != self.selected_model.get()
         ):
             # dont know how this works, but it does :)
