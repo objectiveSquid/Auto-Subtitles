@@ -30,7 +30,7 @@ python3.12 autosubtitles
 **If you have Git installed, you can clone the repository:**
 ```sh
 git clone https://github.com/objectiveSquid/Autosubtitles.git
-cd yourprojectname
+cd autosubtitles
 ```
 
 **If you don’t have Git installed, you can download the repository as a ZIP file:**
