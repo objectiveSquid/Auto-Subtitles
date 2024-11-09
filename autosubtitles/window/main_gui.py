@@ -16,10 +16,11 @@ from misc.path import (
 )
 from generator.subtitle_generator import SubtitleGenerator
 from .misc import _BUTTON_GREY, _BUTTON_RED, _BG_GREY
-from ._utils import seticon
+from ._utils import set_font_size, seticon
 
 import PIL.Image as Image, PIL.ImageTk as ImageTk
-from typing import Callable, Literal
+from typing import Callable, Literal, Any
+import tkinter.font as tk_font
 import tkinter.ttk as ttk
 import tkinter as tk
 import os
@@ -30,7 +31,9 @@ class SettingsWindow:
         self,
         root: tk.Misc,
         current_modelinfo: ModelInfo,
-        exit_callback: Callable[[], None],
+        exit_callback: Callable[[], Any],
+        current_font_size: int,
+        change_text_size_callback: Callable[[int], Any],
     ) -> None:
         self.lines = 0
         get_available_models()
@@ -98,6 +101,30 @@ class SettingsWindow:
             self.window, background=_BG_GREY, foreground="#FFFFFF", font=("Arial", 10)
         )
         self.download_model_warning.pack()
+
+        tk.Label(
+            self.window,
+            background=_BG_GREY,
+            foreground="#FFFFFF",
+            text="Text size",
+        ).pack(fill=tk.X)
+
+        self.text_size_value = tk.StringVar(self.window, value=str(current_font_size))
+        self.text_size = ttk.Spinbox(
+            self.window,
+            textvariable=self.text_size_value,
+            from_=5,
+            to=100,
+            increment=5,
+        )
+        handle_spinbox_change = lambda event: change_text_size_callback(
+            int(self.text_size_value.get())
+        )
+        self.text_size.bind("<<Increment>>", handle_spinbox_change)
+        self.text_size.bind("<<Decrement>>", handle_spinbox_change)
+        self.text_size.bind("<Return>", handle_spinbox_change)
+        self.text_size.bind("<FocusOut>", handle_spinbox_change)
+        self.text_size.pack()
 
         # exit button
         tk.Button(
@@ -218,7 +245,11 @@ class SubtitleWindow:
 
     def __create_settings_window(self) -> None:
         self.settings = SettingsWindow(
-            self.root, self.subtitle_generator.model_info, self.__close_settings
+            self.root,
+            self.subtitle_generator.model_info,
+            self.__close_settings,
+            int(self.text_widget.cget("font").split(" ")[-1]),
+            lambda new_size: set_font_size(self.text_widget, new_size),
         )
 
     def __close_settings(self) -> None:

@@ -1,6 +1,5 @@
 # Todo list
 ## Features
-  - be able to change text size
   - be able to customize transparency of window
   - change text scrolling
   - translation (with deep_translator from pypi?)
