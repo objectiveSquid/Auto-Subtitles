@@ -1,6 +1,5 @@
 # Todo list
 ## Features
-  - its slow as shit (optimize)
   - more safety checks
   - cleaner logging
   - be able to change text size
