@@ -19,8 +19,8 @@ from .misc import _BUTTON_GREY, _BUTTON_RED, _BG_GREY
 from ._utils import set_font_size, seticon
 
 import PIL.Image as Image, PIL.ImageTk as ImageTk
+import tkinter.messagebox as tk_messagebox
 from typing import Callable, Literal, Any
-import tkinter.font as tk_font
 import tkinter.ttk as ttk
 import tkinter as tk
 import os
@@ -31,9 +31,8 @@ class SettingsWindow:
         self,
         root: tk.Misc,
         current_modelinfo: ModelInfo,
-        exit_callback: Callable[[], Any],
+        apply_callback: Callable[[], Any],
         current_font_size: int,
-        change_text_size_callback: Callable[[int], Any],
     ) -> None:
         self.lines = 0
         get_available_models()
@@ -43,7 +42,8 @@ class SettingsWindow:
         self.window = tk.Toplevel(self.parent, background=_BG_GREY)
         self.window.wm_geometry("400x600")
 
-        self.current_modelinfo = current_modelinfo
+        self.old_modelinfo = current_modelinfo
+        self.old_font_size = current_font_size
 
         self.window.wm_title("Auto Subtitles Settings")
         seticon(self.window, resourcepath("settings.png"))
@@ -110,30 +110,25 @@ class SettingsWindow:
         ).pack(fill=tk.X)
 
         self.text_size_value = tk.StringVar(self.window, value=str(current_font_size))
-        self.text_size = ttk.Spinbox(
-            self.window,
-            textvariable=self.text_size_value,
-            from_=5,
-            to=100,
-            increment=5,
-        )
-        handle_spinbox_change = lambda event: change_text_size_callback(
-            int(self.text_size_value.get())
-        )
-        self.text_size.bind("<<Increment>>", handle_spinbox_change)
-        self.text_size.bind("<<Decrement>>", handle_spinbox_change)
-        self.text_size.bind("<Return>", handle_spinbox_change)
-        self.text_size.bind("<FocusOut>", handle_spinbox_change)
-        self.text_size.pack()
+        ttk.Spinbox(
+            self.window, textvariable=self.text_size_value, from_=5, to=100, increment=5
+        ).pack()
 
         # exit button
         tk.Button(
-            self.window, text="Close settings", font=("Arial", 8), command=exit_callback
-        ).place(
-            relx=self.window.winfo_width() * 0.9,
-            rely=self.window.winfo_width() * 0.9,
-            anchor=tk.SE,
-        )
+            self.window,
+            text="Close settings",
+            font=("Arial", 8),
+            command=self.close,
+        ).pack(side=tk.RIGHT, anchor=tk.SE, padx=10, pady=10)
+
+        # apply button
+        tk.Button(
+            self.window,
+            text="Apply settings",
+            font=("Arial", 8),
+            command=apply_callback,
+        ).pack(side=tk.RIGHT, anchor=tk.SE, pady=10)
 
         self.__check_model_download(self.selected_model)
 
@@ -163,8 +158,26 @@ class SettingsWindow:
 
         self.__check_model_download(self.selected_model)
 
-    def close(self) -> SubtitleGenerator | None:
-        self.window.wm_withdraw()
+    def close(self) -> None:
+        if (
+            int(self.text_size_value.get()) != self.old_font_size
+            or self.old_modelinfo.name != self.selected_model.get()
+        ):
+            # dont know how this works, but it does :)
+            self.window.master.wm_withdraw()  # type: ignore
+            self.window.master.attributes("-topmost", True)  # type: ignore
+            exit_anyway = tk_messagebox.askyesno(
+                "You have unsaved changes!",
+                "You have unsaved changes in text size, are you sure you want to exit?",
+            )
+            self.window.master.wm_deiconify()  # type: ignore
+            if not exit_anyway:
+                return
+
+        self.window.destroy()
+
+    def apply(self) -> tuple[SubtitleGenerator | None, int]:
+        new_generator = None
 
         modelinfo: ModelInfo = find_model_info_by_name(self.selected_model.get())  # type: ignore
 
@@ -173,11 +186,12 @@ class SettingsWindow:
 
         write_previous_model_file(modelinfo.name)
 
-        if self.current_modelinfo.name == modelinfo.name:
-            return None
-        return SubtitleGenerator(
-            f"{models_path}/{self.selected_model.get()}", modelinfo
-        )
+        if self.old_modelinfo.name != modelinfo.name:
+            new_generator = SubtitleGenerator(
+                f"{models_path}/{self.selected_model.get()}", modelinfo
+            )
+
+        return new_generator, int(self.text_size_value.get())
 
 
 class SubtitleWindow:
@@ -247,18 +261,20 @@ class SubtitleWindow:
         self.settings = SettingsWindow(
             self.root,
             self.subtitle_generator.model_info,
-            self.__close_settings,
+            self.__apply_settings,
             int(self.text_widget.cget("font").split(" ")[-1]),
-            lambda new_size: set_font_size(self.text_widget, new_size),
         )
 
-    def __close_settings(self) -> None:
-        result = self.settings.close()
-        if result != None:
+    def __apply_settings(self) -> None:
+        new_generator, new_font_size = self.settings.apply()
+
+        if new_generator != None:
             self.subtitle_generator.stop()
 
-            self.subtitle_generator = result
+            self.subtitle_generator = new_generator
             self.subtitle_generator.start()
+
+        set_font_size(self.text_widget, new_font_size)
 
     def __button(
         self,
