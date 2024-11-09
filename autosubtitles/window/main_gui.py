@@ -171,11 +171,6 @@ class SubtitleWindow:
         # settings window
         self.settings: SettingsWindow
 
-        def create_settings_window() -> None:
-            self.settings = SettingsWindow(
-                self.root, subtitle_generator.model_info, self.__close_settings
-            )
-
         # continued - subtitle window initialization
         target_x = round((self.root.winfo_screenwidth() / 2) - (width / 2))
         target_y = round(self.root.winfo_screenheight() - (height * 1.5))
@@ -196,7 +191,7 @@ class SubtitleWindow:
             side="right",
         )
         self.__button(
-            create_settings_window,
+            self.__create_settings_window,
             resourcepath("settings.png"),
             _BUTTON_GREY,
             side="left",
@@ -220,6 +215,11 @@ class SubtitleWindow:
 
         self.root.bind("<Button-1>", self.__start_drag)
         self.root.bind("<B1-Motion>", self.__drag_window)
+
+    def __create_settings_window(self) -> None:
+        self.settings = SettingsWindow(
+            self.root, self.subtitle_generator.model_info, self.__close_settings
+        )
 
     def __close_settings(self) -> None:
         result = self.settings.close()
