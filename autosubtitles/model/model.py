@@ -1,7 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from misc.settings import Settings
+
 from generator.subtitle_generator import SubtitleGenerator
-from misc.path import previous_model_path, models_path
+from misc.other import REQUEST_ERROR_EXIT_CODE, without
 from window.misc import ProgressWindow
-from misc.other import without
+from misc.path import MODELS_PATH
 from misc.zip import unzip
 
 import tkinter as tk
@@ -29,23 +36,19 @@ def find_model_info_by_name(modelname: str) -> ModelInfo | None:
                 return modelinfo
 
 
-def load_previous_model() -> SubtitleGenerator | None:
-    try:
-        with open(previous_model_path, "r") as previous_model_fp:
-            previous_model_name = previous_model_fp.read().strip()
-    except OSError:
+def load_previous_model(settings: Settings) -> SubtitleGenerator | None:
+    if settings.model_name == None:
         return
-
-    previous_model_info = find_model_info_by_name(previous_model_name)
+    previous_model_info = find_model_info_by_name(settings.model_name)
     if previous_model_info == None:
         return
     return SubtitleGenerator(
-        f"{models_path}/{previous_model_name}", previous_model_info
+        f"{MODELS_PATH}/{settings.model_name}", previous_model_info
     )
 
 
 def get_downloaded_models() -> list[str]:
-    return os.listdir(models_path)
+    return os.listdir(MODELS_PATH)
 
 
 def get_downloaded_models_info(
@@ -80,7 +83,7 @@ def download_model(master: tk.Misc, link: str) -> None:
     if modelname in get_downloaded_models():
         return
 
-    temp_zip_file = f"{models_path}/{modelname}.tmp.zip"
+    temp_zip_file = f"{MODELS_PATH}/{modelname}.tmp.zip"
 
     response = requests.get(link, stream=True)
     downloaded_content = 0
@@ -107,7 +110,7 @@ def download_model(master: tk.Misc, link: str) -> None:
             master.update()
 
     progresswindow.startunzip()
-    unzip(temp_zip_file, models_path)
+    unzip(temp_zip_file, MODELS_PATH)
     progresswindow.close()
 
     os.remove(temp_zip_file)
@@ -119,9 +122,16 @@ def get_available_models() -> dict[str, list[ModelInfo]]:
     latest_group = None
     recasepunc = False
 
-    soup = bs4.BeautifulSoup(
-        requests.get("https://alphacephei.com/vosk/models").text, "html.parser"
-    )
+    try:
+        soup = bs4.BeautifulSoup(
+            requests.get("https://alphacephei.com/vosk/models").text, "html.parser"
+        )
+    except requests.RequestException as error:
+        print(
+            f"Failed to download model list, please check your internet connection: {error}"
+        )
+        exit(REQUEST_ERROR_EXIT_CODE)
+
     for line in soup.find_all("tr"):
         line: bs4.Tag
 

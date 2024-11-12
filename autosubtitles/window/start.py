@@ -6,10 +6,10 @@ from model.model import (
     get_available_models,
     ModelInfo,
 )
-from misc.path import create_models_path, resourcepath, models_path
+from misc.path import create_models_path, resourcepath, MODELS_PATH
 from generator.subtitle_generator import SubtitleGenerator
 from ._utils import seticon
-from .misc import _BG_GREY
+from .misc import BACKGROUND_GREY
 
 import tkinter.messagebox as tk_messagebox
 import tkinter.ttk as ttk
@@ -23,7 +23,7 @@ class StartWindow:
         get_available_models()
         create_models_path()
 
-        self.window = tk.Toplevel(background=_BG_GREY)
+        self.window = tk.Toplevel(background=BACKGROUND_GREY)
         self.window.wm_geometry("300x200")
 
         tk_messagebox.showinfo(
@@ -36,7 +36,7 @@ class StartWindow:
 
         tk.Label(
             self.window,
-            background=_BG_GREY,
+            background=BACKGROUND_GREY,
             foreground="#FFFFFF",
             text="Select model",
         ).pack(fill=tk.X)
@@ -107,7 +107,7 @@ class StartWindow:
 
         # i will commit a holocaust on the python type system
         self.generator = SubtitleGenerator(
-            f"{models_path}/{self.selected_model.get()}", modelinfo
+            f"{MODELS_PATH}/{self.selected_model.get()}", modelinfo
         )
 
         self.window.destroy()

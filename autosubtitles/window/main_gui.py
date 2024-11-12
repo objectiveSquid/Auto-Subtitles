@@ -9,13 +9,13 @@ from model.model import (
     ModelInfo,
 )
 from misc.path import (
-    write_previous_model_file,
     create_models_path,
     resourcepath,
-    models_path,
+    MODELS_PATH,
 )
 from generator.subtitle_generator import SubtitleGenerator
-from .misc import _BUTTON_GREY, _BUTTON_RED, _BG_GREY
+from .misc import BUTTON_GREY, BUTTON_RED, BACKGROUND_GREY
+from misc.settings import write_settings, Settings
 from ._utils import set_font_size, seticon
 
 import PIL.Image as Image, PIL.ImageTk as ImageTk
@@ -30,7 +30,7 @@ class SettingsWindow:
     def __init__(
         self,
         root: tk.Misc,
-        current_modelinfo: ModelInfo,
+        settings: Settings,
         apply_callback: Callable[[], Any],
         current_font_size: int,
         current_transparency: float,
@@ -39,26 +39,27 @@ class SettingsWindow:
         get_available_models()
         create_models_path()
 
+        self.settings = settings
         self.parent = root
-        self.window = tk.Toplevel(self.parent, background=_BG_GREY)
+        self.window = tk.Toplevel(self.parent, background=BACKGROUND_GREY)
         self.window.wm_geometry("400x600")
 
-        self.old_modelinfo = current_modelinfo
+        self.old_modelinfo: ModelInfo = find_model_info_by_name(settings.model_name)  # type: ignore
         self.old_font_size = current_font_size
-        self.old_transparency = current_transparency
+        self.old_alpha_value = current_transparency
 
         self.window.wm_title("Auto Subtitles Settings")
         seticon(self.window, resourcepath("settings.png"))
 
         tk.Label(
             self.window,
-            background=_BG_GREY,
+            background=BACKGROUND_GREY,
             foreground="#FFFFFF",
             text="Select model",
         ).pack(fill=tk.X)
 
         self.selected_model_category = tk.StringVar(
-            self.window, value=current_modelinfo.category
+            self.window, value=self.old_modelinfo.category
         )
         category_select = ttk.Combobox(
             self.window,
@@ -77,7 +78,7 @@ class SettingsWindow:
 
         self.selected_model = tk.StringVar(
             self.window,
-            value=current_modelinfo.name,
+            value=self.old_modelinfo.name,
         )
         self.model_select = ttk.Combobox(
             self.window,
@@ -100,13 +101,16 @@ class SettingsWindow:
         self.model_select.pack()
 
         self.download_model_warning = tk.Label(
-            self.window, background=_BG_GREY, foreground="#FFFFFF", font=("Arial", 10)
+            self.window,
+            background=BACKGROUND_GREY,
+            foreground="#FFFFFF",
+            font=("Arial", 10),
         )
         self.download_model_warning.pack()
 
         tk.Label(
             self.window,
-            background=_BG_GREY,
+            background=BACKGROUND_GREY,
             foreground="#FFFFFF",
             text="Subtitle font size",
         ).pack(fill=tk.X)
@@ -121,7 +125,7 @@ class SettingsWindow:
 
         tk.Label(
             self.window,
-            background=_BG_GREY,
+            background=BACKGROUND_GREY,
             foreground="#FFFFFF",
             text="Subtitle window transparency",
         ).pack(fill=tk.X)
@@ -183,7 +187,7 @@ class SettingsWindow:
     def close(self) -> None:
         if (
             int(self.text_size_value.get()) != self.old_font_size
-            or float(self.transparency_value.get()) != self.old_transparency
+            or float(self.transparency_value.get()) != self.old_alpha_value
             or self.old_modelinfo.name != self.selected_model.get()
         ):
             # dont know how this works, but it does :)
@@ -207,18 +211,22 @@ class SettingsWindow:
         if self.selected_model.get() not in get_downloaded_models():
             download_model(self.window, modelinfo.link)
 
-        write_previous_model_file(modelinfo.name)
+        self.settings.model_name = modelinfo.name
+        self.settings.font_size = int(self.text_size_value.get())
+        self.settings.alpha_value = float(self.transparency_value.get())
 
         if self.old_modelinfo.name != modelinfo.name:
             new_generator = SubtitleGenerator(
-                f"{models_path}/{self.selected_model.get()}", modelinfo
+                f"{MODELS_PATH}/{self.selected_model.get()}", modelinfo
             )
 
         self.old_modelinfo = modelinfo
-        self.old_font_size = int(self.text_size_value.get())
-        self.old_transparency = float(self.transparency_value.get())
+        self.old_font_size = self.settings.font_size
+        self.old_alpha_value = self.settings.alpha_value
 
-        return new_generator, self.old_font_size, self.old_transparency
+        write_settings(self.settings)
+
+        return new_generator, self.settings.font_size, self.settings.alpha_value
 
 
 class SubtitleWindow:
@@ -227,8 +235,11 @@ class SubtitleWindow:
         width: int,
         height: int,
         subtitle_generator: SubtitleGenerator,
+        settings: Settings,
     ) -> None:
         self.subtitle_generator = subtitle_generator
+        self.settings = settings
+
         self.anti_garbage_collection_list = []
         self.left_buttons = 0
         self.right_buttons = 0
@@ -237,7 +248,7 @@ class SubtitleWindow:
         self.root = tk.Tk()
 
         # settings window
-        self.settings: SettingsWindow
+        self.settings_window: SettingsWindow
 
         # continued - subtitle window initialization
         target_x = round((self.root.winfo_screenwidth() / 2) - (width / 2))
@@ -247,7 +258,7 @@ class SubtitleWindow:
 
         if os.name == "posix":
             self.root.wait_visibility(self.root)
-        self.root.wm_attributes("-alpha", 0.75)
+        self.root.wm_attributes("-alpha", self.settings.alpha_value)
 
         self.topbar = tk.Frame(self.root, background="black", borderwidth=0)
         self.topbar.place(x=0, y=0, relwidth=1.0, height=self.root.winfo_height() / 10)
@@ -255,19 +266,19 @@ class SubtitleWindow:
         self.__button(
             self.subtitle_generator.stop,
             resourcepath("x.png"),
-            _BUTTON_RED,
+            BUTTON_RED,
             side="right",
         )
         self.__button(
             self.__create_settings_window,
             resourcepath("settings.png"),
-            _BUTTON_GREY,
+            BUTTON_GREY,
             side="left",
         )
 
         self.text_widget = tk.Text(
             self.root,
-            font=("Arial", 20),
+            font=("Arial", self.settings.font_size),
             wrap=tk.WORD,
             background="black",
             foreground="white",
@@ -295,16 +306,16 @@ class SubtitleWindow:
             except Exception as error_2:
                 current_alpha_value = 0.75
 
-        self.settings = SettingsWindow(
+        self.settings_window = SettingsWindow(
             self.root,
-            self.subtitle_generator.model_info,
+            self.settings,
             self.__apply_settings,
             int(self.text_widget.cget("font").split(" ")[-1]),
             current_alpha_value,
         )
 
     def __apply_settings(self) -> None:
-        new_generator, new_font_size, new_alpha_value = self.settings.apply()
+        new_generator, new_font_size, new_alpha_value = self.settings_window.apply()
 
         if new_generator != None:
             self.subtitle_generator.stop()

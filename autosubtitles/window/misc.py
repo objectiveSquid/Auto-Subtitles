@@ -7,9 +7,9 @@ import tkinter.ttk as ttk
 import tkinter as tk
 
 
-_BG_GREY = "#333333"
-_BUTTON_GREY = "#555555"
-_BUTTON_RED = "#BB0000"
+BACKGROUND_GREY = "#333333"
+BUTTON_GREY = "#555555"
+BUTTON_RED = "#BB0000"
 
 
 class ProgressWindow:
@@ -22,7 +22,7 @@ class ProgressWindow:
         self.progress_length = progress_length
         self.modelname = modelname
 
-        self.window = tk.Toplevel(master, background=_BG_GREY)
+        self.window = tk.Toplevel(master, background=BACKGROUND_GREY)
         self.window.wm_geometry("500x300")
         self.window.wm_title(f"Loading model {modelname}")
         seticon(self.window, resourcepath("settings.png"))
