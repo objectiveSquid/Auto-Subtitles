@@ -42,7 +42,7 @@ def load_settings() -> Settings | None:
     try:
         with open(SETTINGS_PATH, "r") as settings_fp:
             return Settings.from_json(json.load(settings_fp))
-    except (json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError, ValueError):
         return
 
 
