@@ -23,6 +23,7 @@ import tkinter.messagebox as tk_messagebox
 from typing import Callable, Literal, Any
 import tkinter.ttk as ttk
 import tkinter as tk
+import copy
 import os
 
 
@@ -32,21 +33,16 @@ class SettingsWindow:
         root: tk.Misc,
         settings: Settings,
         apply_callback: Callable[[], Any],
-        current_font_size: int,
-        current_transparency: float,
     ) -> None:
         self.lines = 0
         get_available_models()
         create_models_path()
 
-        self.settings = settings
+        self.old_settings = copy.copy(settings)
+        self.settings = copy.copy(settings)
         self.parent = root
         self.window = tk.Toplevel(self.parent, background=BACKGROUND_GREY)
         self.window.wm_geometry("400x600")
-
-        self.old_modelinfo: ModelInfo = find_model_info_by_name(settings.model_name)  # type: ignore
-        self.old_font_size = current_font_size
-        self.old_alpha_value = current_transparency
 
         self.window.wm_title("Auto Subtitles Settings")
         seticon(self.window, resourcepath("settings.png"))
@@ -59,7 +55,7 @@ class SettingsWindow:
         ).pack(fill=tk.X)
 
         self.selected_model_category = tk.StringVar(
-            self.window, value=self.old_modelinfo.category
+            self.window, value=self.old_settings.model_info.category
         )
         category_select = ttk.Combobox(
             self.window,
@@ -78,7 +74,7 @@ class SettingsWindow:
 
         self.selected_model = tk.StringVar(
             self.window,
-            value=self.old_modelinfo.name,
+            value=self.old_settings.model_name,
         )
         self.model_select = ttk.Combobox(
             self.window,
@@ -114,13 +110,21 @@ class SettingsWindow:
             foreground="#FFFFFF",
             text="Subtitle font size",
         ).pack(fill=tk.X)
-        self.text_size_value = tk.StringVar(self.window, value=str(current_font_size))
+        self.text_size_value = tk.StringVar(
+            self.window, value=str(self.settings.font_size)
+        )
+
+        def update_font_size() -> None:
+            self.settings.font_size = int(self.text_size_value.get())
+            self.__check_apply_button_color()
+
         ttk.Spinbox(
             self.window,
             textvariable=self.text_size_value,
             from_=5,
             to=100,
             increment=5,
+            command=update_font_size,
         ).pack()
 
         tk.Label(
@@ -130,14 +134,20 @@ class SettingsWindow:
             text="Subtitle window transparency",
         ).pack(fill=tk.X)
         self.transparency_value = tk.StringVar(
-            self.window, value=str(current_transparency)
+            self.window, value=str(self.settings.alpha_value)
         )
+
+        def update_transparency() -> None:
+            self.settings.alpha_value = float(self.transparency_value.get())
+            self.__check_apply_button_color()
+
         ttk.Spinbox(
             self.window,
             textvariable=self.transparency_value,
             from_=0,
             to=1,
             increment=0.1,
+            command=update_transparency,
         ).pack()
 
         # exit button
@@ -149,18 +159,28 @@ class SettingsWindow:
         ).pack(side=tk.RIGHT, anchor=tk.SE, padx=10, pady=10)
 
         # apply button
-        tk.Button(
+        self.apply_button = tk.Button(
             self.window,
             text="Apply settings",
             font=("Arial", 8),
             command=apply_callback,
-        ).pack(side=tk.RIGHT, anchor=tk.SE, pady=10)
+            state=tk.DISABLED,
+        )
+        self.apply_button.pack(side=tk.RIGHT, anchor=tk.SE, pady=10)
 
         self.__check_model_download(self.selected_model)
+
+    def __check_apply_button_color(self) -> None:
+        if self.old_settings == self.settings:
+            self.apply_button["state"] = tk.DISABLED
+        else:
+            self.apply_button["state"] = tk.NORMAL
 
     def __check_model_download(self, modelname: tk.StringVar | str) -> None:
         if isinstance(modelname, tk.StringVar):
             modelname = modelname.get()
+        self.settings.model_name = modelname
+        self.__check_apply_button_color()
 
         if modelname in get_downloaded_models():
             self.download_model_warning.configure(text="")
@@ -185,11 +205,7 @@ class SettingsWindow:
         self.__check_model_download(self.selected_model)
 
     def close(self) -> None:
-        if (
-            int(self.text_size_value.get()) != self.old_font_size
-            or float(self.transparency_value.get()) != self.old_alpha_value
-            or self.old_modelinfo.name != self.selected_model.get()
-        ):
+        if self.settings != self.old_settings:
             # dont know how this works, but it does :)
             self.window.master.wm_withdraw()  # type: ignore
             self.window.master.attributes("-topmost", True)  # type: ignore
@@ -206,23 +222,15 @@ class SettingsWindow:
     def apply(self) -> tuple[SubtitleGenerator | None, int, float]:
         new_generator = None
 
-        modelinfo: ModelInfo = find_model_info_by_name(self.selected_model.get())  # type: ignore
-
         if self.selected_model.get() not in get_downloaded_models():
-            download_model(self.window, modelinfo.link)
+            download_model(self.window, self.settings.model_info.link)
 
-        self.settings.model_name = modelinfo.name
-        self.settings.font_size = int(self.text_size_value.get())
-        self.settings.alpha_value = float(self.transparency_value.get())
-
-        if self.old_modelinfo.name != modelinfo.name:
+        if self.old_settings.model_name != self.settings.model_name:
             new_generator = SubtitleGenerator(
-                f"{MODELS_PATH}/{self.selected_model.get()}", modelinfo
+                f"{MODELS_PATH}/{self.selected_model.get()}", self.settings.model_info
             )
 
-        self.old_modelinfo = modelinfo
-        self.old_font_size = self.settings.font_size
-        self.old_alpha_value = self.settings.alpha_value
+        self.old_settings = copy.copy(self.settings)
 
         write_settings(self.settings)
 
@@ -296,22 +304,8 @@ class SubtitleWindow:
         self.root.bind("<B1-Motion>", self.__drag_window)
 
     def __create_settings_window(self) -> None:
-        try:
-            current_alpha_value = float(self.root.wm_attributes("-alpha"))
-        except Exception as error:
-            try:
-                current_alpha_value = float(
-                    self.root.winfo_toplevel().attributes("-alpha")
-                )
-            except Exception as error_2:
-                current_alpha_value = 0.75
-
         self.settings_window = SettingsWindow(
-            self.root,
-            self.settings,
-            self.__apply_settings,
-            int(self.text_widget.cget("font").split(" ")[-1]),
-            current_alpha_value,
+            self.root, self.settings, self.__apply_settings
         )
 
     def __apply_settings(self) -> None:

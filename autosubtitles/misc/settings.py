@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .path import SETTINGS_PATH
 
-from model.model import get_downloaded_models_info
+from model.model import get_downloaded_models_info, find_model_info_by_name, ModelInfo
 import dataclasses
 import json
 
@@ -18,8 +18,29 @@ class Settings:
     alpha_value: float = DEFAULT_ALPHA_VALUE
 
     def __post_init__(self) -> None:
+        self.__prev_model_name = None
+
         if self.model_name == None:
             self.model_name = get_downloaded_models_info(sort=True)[0].name
+
+    @property
+    def model_info(self) -> ModelInfo:
+        if self.__prev_model_name == self.model_name:
+            return self.__model_info
+
+        self.__prev_model_name = self.model_name
+        self.__model_info: ModelInfo = find_model_info_by_name(self.model_name)  # type: ignore
+
+        return self.__model_info
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Settings):
+            return False
+        return (
+            self.model_name == other.model_name
+            and self.font_size == other.font_size
+            and self.alpha_value == other.alpha_value
+        )
 
     @property
     def as_json(self) -> dict[str, str | int | float | None]:
