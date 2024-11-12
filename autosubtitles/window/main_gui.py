@@ -43,6 +43,7 @@ class SettingsWindow:
         self.parent = root
         self.window = tk.Toplevel(self.parent, background=BACKGROUND_GREY)
         self.window.wm_geometry("400x600")
+        self.window.wm_resizable(False, False)
 
         self.window.wm_title("Auto Subtitles Settings")
         seticon(self.window, resourcepath("settings.png"))
@@ -263,6 +264,7 @@ class SubtitleWindow:
         target_y = round(self.root.winfo_screenheight() - (height * 1.5))
         self.root.wm_geometry(f"{width}x{height}+{target_x}+{target_y}")
         self.root.wm_overrideredirect(True)
+        self.root.wm_resizable(False, False)
 
         if os.name == "posix":
             self.root.wait_visibility(self.root)
