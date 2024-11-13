@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from model.model import ModelInfo
 
+from misc.other import without
+
 import numpy as np
 import threading
 import soundcard
@@ -65,13 +67,7 @@ class SubtitleGenerator(threading.Thread):
 
     @property
     def display_text(self) -> str:
-        output = "\n".join(self.text)
-
-        # remove double newlines
-        while "\n\n" in output:
-            output = output.replace("\n\n", "\n")
-
-        return output
+        return "\n".join(without(self.text, ""))
 
     def stop(self) -> None:
         self.running = False
