@@ -369,11 +369,11 @@ class SubtitleWindow:
 
         self.anti_garbage_collection_list.append(button_image)
 
-    def __start_drag(self, event):
+    def __start_drag(self, event: tk.Event) -> None:
         self.x_offset = event.x
         self.y_offset = event.y
 
-    def __drag_window(self, event):
+    def __drag_window(self, event: tk.Event) -> None:
         x = event.x_root - self.x_offset
         y = event.y_root - self.y_offset
         self.root.geometry(f"+{x}+{y}")
