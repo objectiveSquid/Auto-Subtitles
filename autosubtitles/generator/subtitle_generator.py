@@ -65,7 +65,13 @@ class SubtitleGenerator(threading.Thread):
 
     @property
     def display_text(self) -> str:
-        return "\n".join(self.text)
+        output = "\n".join(self.text)
+
+        # remove double newlines
+        while "\n\n" in output:
+            output = output.replace("\n\n", "\n")
+
+        return output
 
     def stop(self) -> None:
         self.running = False
