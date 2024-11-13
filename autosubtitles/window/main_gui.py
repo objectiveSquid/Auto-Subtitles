@@ -6,22 +6,22 @@ from model.model import (
     get_downloaded_models,
     download_model,
     get_available_models,
-    ModelInfo,
 )
 from misc.path import (
     create_models_path,
     resourcepath,
     MODELS_PATH,
 )
+from ._utils import combobox_ignore_input, set_font_size, seticon
 from generator.subtitle_generator import SubtitleGenerator
 from .misc import BUTTON_GREY, BUTTON_RED, BACKGROUND_GREY
 from misc.settings import write_settings, Settings
-from ._utils import set_font_size, seticon
 
 import PIL.Image as Image, PIL.ImageTk as ImageTk
 import tkinter.messagebox as tk_messagebox
 from typing import Callable, Literal, Any
 import tkinter.ttk as ttk
+import deep_translator
 import tkinter as tk
 import copy
 import os
@@ -63,10 +63,7 @@ class SettingsWindow:
             textvariable=self.selected_model_category,
             values=list(get_available_models().keys()),
         )
-        # disallow typing
-        category_select.bind("<Key>", lambda event: "break")
-        category_select.bind("<BackSpace>", lambda event: "break")
-        category_select.bind("<Delete>", lambda event: "break")
+        combobox_ignore_input(category_select)
         category_select.bind(
             "<<ComboboxSelected>>",
             lambda event: self.__set_model_category(self.selected_model_category),
@@ -87,10 +84,7 @@ class SettingsWindow:
                 ]
             ],
         )
-        # disallow typing
-        category_select.bind("<Key>", lambda event: "break")
-        category_select.bind("<BackSpace>", lambda event: "break")
-        category_select.bind("<Delete>", lambda event: "break")
+        combobox_ignore_input(self.model_select)
         self.model_select.bind(
             "<<ComboboxSelected>>",
             lambda event: self.__check_model_download(self.selected_model),
@@ -128,6 +122,12 @@ class SettingsWindow:
             command=update_font_size,
         ).pack()
 
+        self.__whitespace(10)
+
+        def update_transparency() -> None:
+            self.settings.alpha_value = float(self.transparency_value.get())
+            self.__check_apply_button_color()
+
         tk.Label(
             self.window,
             background=BACKGROUND_GREY,
@@ -138,10 +138,6 @@ class SettingsWindow:
             self.window, value=str(self.settings.alpha_value)
         )
 
-        def update_transparency() -> None:
-            self.settings.alpha_value = float(self.transparency_value.get())
-            self.__check_apply_button_color()
-
         ttk.Spinbox(
             self.window,
             textvariable=self.transparency_value,
@@ -150,6 +146,45 @@ class SettingsWindow:
             increment=0.1,
             command=update_transparency,
         ).pack()
+
+        self.__whitespace(10)
+
+        def update_translation_language() -> None:
+            self.settings.translation_language = (
+                self.translation_language.get().casefold()
+            )
+            if self.settings.translation_language == "do not translate":
+                self.settings.translation_language = None
+            self.__check_apply_button_color()
+
+        tk.Label(
+            self.window,
+            background=BACKGROUND_GREY,
+            foreground="#FFFFFF",
+            text="Translation language",
+        ).pack(fill=tk.X)
+        self.translation_lang = tk.StringVar(
+            self.window, value=str(self.settings.translation_language)
+        )
+
+        self.translation_language = tk.StringVar(
+            self.window,
+            value=(
+                self.settings.translation_language.capitalize()
+                if self.settings.translation_language != None
+                else "Do not translate"
+            ),
+        )
+        translation_language_select = ttk.Combobox(
+            self.window,
+            textvariable=self.translation_language,
+            values=["Do not translate"] + [lang.capitalize() for lang in deep_translator.GoogleTranslator().get_supported_languages()],  # type: ignore
+        )
+        combobox_ignore_input(translation_language_select)
+        translation_language_select.bind(
+            "<<ComboboxSelected>>", lambda event: update_translation_language()
+        )
+        translation_language_select.pack()
 
         # exit button
         tk.Button(
@@ -170,6 +205,13 @@ class SettingsWindow:
         self.apply_button.pack(side=tk.RIGHT, anchor=tk.SE, pady=10)
 
         self.__check_model_download(self.selected_model)
+
+    def __whitespace(self, size: int) -> None:
+        tk.Label(
+            self.window,
+            background=BACKGROUND_GREY,
+            font=("Arial", size),
+        ).pack()
 
     def __check_apply_button_color(self) -> None:
         if self.old_settings == self.settings:
@@ -220,8 +262,10 @@ class SettingsWindow:
 
         self.window.destroy()
 
-    def apply(self) -> tuple[SubtitleGenerator | None, int, float]:
+    def apply(self) -> tuple[SubtitleGenerator | None, int, float, str | None]:
         new_generator = None
+
+        self.apply_button["state"] = tk.DISABLED
 
         if self.selected_model.get() not in get_downloaded_models():
             download_model(self.window, self.settings.model_info.link)
@@ -235,7 +279,12 @@ class SettingsWindow:
 
         write_settings(self.settings)
 
-        return new_generator, self.settings.font_size, self.settings.alpha_value
+        return (
+            new_generator,
+            self.settings.font_size,
+            self.settings.alpha_value,
+            self.settings.translation_language,
+        )
 
 
 class SubtitleWindow:
@@ -311,7 +360,10 @@ class SubtitleWindow:
         )
 
     def __apply_settings(self) -> None:
-        new_generator, new_font_size, new_alpha_value = self.settings_window.apply()
+        new_generator, new_font_size, new_alpha_value, new_translation_language = (
+            self.settings_window.apply()
+        )
+        self.settings.translation_language = new_translation_language
 
         if new_generator != None:
             self.subtitle_generator.stop()
@@ -398,7 +450,10 @@ class SubtitleWindow:
             new_text = self.subtitle_generator.display_text
             if new_text != old_text:
                 self.text_widget.delete("1.0", tk.END)
-                self.text_widget.insert("1.0", new_text)
+                if self.settings.translation_language != None:
+                    self.text_widget.insert("1.0", self.settings.translator.translate(new_text))  # type: ignore
+                else:
+                    self.text_widget.insert("1.0", new_text)
                 self.__check_overflow()
                 old_text = new_text
 

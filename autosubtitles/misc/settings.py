@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+
 from .path import SETTINGS_PATH
 
 from model.model import get_downloaded_models_info, find_model_info_by_name, ModelInfo
+import deep_translator.base
+import deep_translator
 import dataclasses
 import json
 
@@ -16,12 +19,30 @@ class Settings:
     model_name: str = None  # type: ignore
     font_size: int = DEFAULT_FONT_SIZE
     alpha_value: float = DEFAULT_ALPHA_VALUE
+    translation_language: str | None = None
 
     def __post_init__(self) -> None:
         self.__prev_model_name = None
+        self.__prev_translation_language = None
+        self.__translator = None
 
         if self.model_name == None:
             self.model_name = get_downloaded_models_info(sort=True)[0].name
+
+    @property
+    def translator(self) -> deep_translator.base.BaseTranslator | None:
+        if self.translation_language == None:
+            return
+
+        if self.__prev_translation_language == self.translation_language:
+            return self.__translator
+
+        self.__prev_model_name = self.model_name
+
+        self.__translator = deep_translator.GoogleTranslator(
+            target=self.translation_language
+        )
+        return self.__translator
 
     @property
     def model_info(self) -> ModelInfo:
@@ -40,6 +61,7 @@ class Settings:
             self.model_name == other.model_name
             and self.font_size == other.font_size
             and self.alpha_value == other.alpha_value
+            and self.translation_language == other.translation_language
         )
 
     @property
@@ -48,6 +70,7 @@ class Settings:
             "model_name": self.model_name,
             "font_size": self.font_size,
             "alpha_value": self.alpha_value,
+            "translation_language": self.translation_language,
         }
 
     @classmethod
@@ -56,6 +79,7 @@ class Settings:
             model_name=json_data["model_name"],
             font_size=int(json_data["font_size"]),
             alpha_value=float(json_data["alpha_value"]),
+            translation_language=json_data["translation_language"],
         )
 
 

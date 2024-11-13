@@ -4,3 +4,4 @@ pillow
 requests
 bs4
 opencv-python
+deep_translator
