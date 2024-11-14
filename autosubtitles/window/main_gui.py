@@ -110,7 +110,7 @@ class SettingsWindow:
         )
 
         def update_font_size() -> None:
-            self.settings.font_size = int(self.text_size_value.get())
+            self.settings.font_size = int(self.text_size_value.get().replace(",", "."))
             self.__check_apply_button_color()
 
         ttk.Spinbox(
@@ -125,7 +125,9 @@ class SettingsWindow:
         self.__whitespace(10)
 
         def update_transparency() -> None:
-            self.settings.alpha_value = float(self.transparency_value.get())
+            self.settings.alpha_value = float(
+                self.transparency_value.get().replace(",", ".")
+            )
             self.__check_apply_button_color()
 
         tk.Label(
