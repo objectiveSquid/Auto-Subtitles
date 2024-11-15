@@ -393,7 +393,7 @@ class SubtitleWindow:
 
         button_image = Image.open(image_path)
         button_image = button_image.resize((image_width, image_height))
-        button_image = ImageTk.PhotoImage(button_image)
+        button_image = ImageTk.PhotoImage(button_image, master=self.root)
 
         button = tk.Button(
             self.topbar,

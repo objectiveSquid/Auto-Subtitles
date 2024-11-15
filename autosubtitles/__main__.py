@@ -1,51 +1,24 @@
-from model.model import get_downloaded_models_info, load_previous_model
-from misc.settings import write_settings, load_settings, Settings
-from generator.subtitle_generator import SubtitleGenerator
-from misc.path import should_run_startwindow, MODELS_PATH
-from window.main_gui import SubtitleWindow
-from misc.other import SUCCESS_EXIT_CODE
-from window.start import StartWindow
+from misc.other import PIP_MISSING_EXIT_CODE, PIP_ERROR_EXIT_CODE
 
 import tkinter.messagebox as tk_messagebox
 
+try:
+    import pip
+except ImportError:
+    tk_messagebox.showerror(
+        "Missing package", "Pip is not installed, please install it."
+    )
+    exit(PIP_MISSING_EXIT_CODE)
 
-def main() -> int:
-    reset_settings = False
-    if (settings := load_settings()) == None:
-        tk_messagebox.showwarning(
-            "Error in internal files",
-            "Error loading settings, resetting to the default values.",
-        )
-        reset_settings = True
-        settings = Settings()
+from install.install_requirements import install_requirements
 
-    if should_run_startwindow():
-        startwindow = StartWindow()
-        while startwindow.generator == None:
-            startwindow.window.update()
-        generator = startwindow.generator
-    else:
-        generator = load_previous_model(settings)
-        if generator == None:
-            fallback_model = get_downloaded_models_info(sort=True)[0]
-            if not reset_settings:
-                tk_messagebox.showerror(
-                    "Error in internal files",
-                    f'Error loading previously used model, selecting "{fallback_model.name}" instead',
-                )
-            settings.model_name = fallback_model.name
-            write_settings(settings)
-            generator = SubtitleGenerator(
-                f"{MODELS_PATH}/{fallback_model.name}", fallback_model
-            )
+if install_requirements(True) != 0:
+    tk_messagebox.showerror(
+        "Error installing requirements",
+        "There was an error automatically installing the requirements, please do so manually, there is a guide in the readme file.",
+    )
+    exit(PIP_ERROR_EXIT_CODE)
 
-    window = SubtitleWindow(600, 250, generator, settings)
-    window.loop()
+from after_install import main
 
-    write_settings(settings)
-
-    return SUCCESS_EXIT_CODE
-
-
-if __name__ == "__main__":
-    exit(main())
+main()
