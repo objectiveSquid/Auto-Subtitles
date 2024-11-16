@@ -1,6 +1,13 @@
 from misc.other import PIP_MISSING_EXIT_CODE, PIP_ERROR_EXIT_CODE
 
 import tkinter.messagebox as tk_messagebox
+import sys
+
+
+if "--do_not_install_requirements" in sys.argv:
+    from after_install import main
+
+    exit(main())
 
 try:
     import pip
@@ -21,4 +28,4 @@ if install_requirements(True) != 0:
 
 from after_install import main
 
-main()
+exit(main())

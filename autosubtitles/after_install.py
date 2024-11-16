@@ -45,7 +45,3 @@ def main() -> int:
     write_settings(settings)
 
     return SUCCESS_EXIT_CODE
-
-
-if __name__ == "__main__":
-    exit(main())
