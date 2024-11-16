@@ -7,9 +7,22 @@ from misc.other import SUCCESS_EXIT_CODE
 from window.start import StartWindow
 
 import tkinter.messagebox as tk_messagebox
+import argparse
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--do_not_install_requirements",
+        action="store_true",
+        help="do not install automatically pip requirements",
+    )  # this is only here for showing it when using --help, the functionality is used in __main__.py
+    args = parser.parse_args()
+
+    if args.help:
+        parser.print_help()
+        return 0
+
     reset_settings = False
     if (settings := load_settings()) == None:
         tk_messagebox.showwarning(
