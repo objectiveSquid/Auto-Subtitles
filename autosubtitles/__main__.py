@@ -1,7 +1,9 @@
 from misc.other import PIP_MISSING_EXIT_CODE, PIP_ERROR_EXIT_CODE
 
 import tkinter.messagebox as tk_messagebox
+import contextlib
 import sys
+import io
 
 
 if "--do_not_install_requirements" in sys.argv:
@@ -10,7 +12,10 @@ if "--do_not_install_requirements" in sys.argv:
     exit(main())
 
 try:
-    import pip
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
+        io.StringIO()
+    ):
+        import pip  # pip needs to learn when to stfu
 except ImportError:
     tk_messagebox.showerror(
         "Missing package", "Pip is not installed, please install it."

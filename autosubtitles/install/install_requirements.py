@@ -2,8 +2,12 @@ from .installing_window import InstallRequirementsWindow
 from misc.other import without
 import contextlib
 import threading
-import pip
 import io
+
+with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(
+    io.StringIO()
+):
+    import pip  # pip needs to learn when to stfu
 
 
 REQUIREMENTS = [
