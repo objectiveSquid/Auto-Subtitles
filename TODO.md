@@ -1,5 +1,6 @@
 # Todo list
 ## Features
+  - allow reset button in settings
   - allow to delete models in settings
   - put categories in settings
   - allow selecting sound input in settings
