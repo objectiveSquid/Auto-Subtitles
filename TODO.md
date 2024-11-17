@@ -1,5 +1,6 @@
 # Todo list
 ## Features
+  - allow to delete models in settings
   - put categories in settings
   - allow selecting sound input in settings
   - allow selecting translation model in settings
