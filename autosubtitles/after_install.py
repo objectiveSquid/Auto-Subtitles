@@ -8,20 +8,43 @@ from window.start import StartWindow
 
 import tkinter.messagebox as tk_messagebox
 import argparse
+import shutil
+import os
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="autosubtitles")
     parser.add_argument(
         "--do_not_install_requirements",
         action="store_true",
         help="do not install automatically pip requirements",
     )  # this is only here for showing it when using --help, the functionality is used in __main__.py
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="reset all settings, revert to the default values and exit",
+    )
+    parser.add_argument(
+        "--delete_models",
+        help="deletes models from a comma separated list (or 'all') and exit",
+    )
     args = parser.parse_args()
 
-    if args.help:
-        parser.print_help()
-        return 0
+    if args.reset:
+        write_settings(Settings())
+        return SUCCESS_EXIT_CODE
+
+    if args.delete_models:
+        if args.delete_models == "all":
+            shutil.rmtree(MODELS_PATH)
+            os.makedirs(MODELS_PATH, exist_ok=True)
+        else:
+            for model_name in args.delete_models.split(","):
+                model_path = f"{MODELS_PATH}/{model_name.strip()}"
+                if os.path.exists(model_path):
+                    shutil.rmtree(model_path)
+
+        return SUCCESS_EXIT_CODE
 
     reset_settings = False
     if (settings := load_settings()) == None:
