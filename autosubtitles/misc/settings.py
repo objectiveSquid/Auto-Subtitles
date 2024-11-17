@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-
+from model.model import get_downloaded_models_info, find_model_info_by_name, ModelInfo
 from .path import SETTINGS_PATH
 
-from model.model import get_downloaded_models_info, find_model_info_by_name, ModelInfo
 import deep_translator.base
 import deep_translator
 import dataclasses
