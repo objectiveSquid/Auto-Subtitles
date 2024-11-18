@@ -8,6 +8,7 @@
   - internet warning when running translation without internet
   - auto install scripts
   - switch to argos-translate?
+  - start menu files?
   - better settings menu/colors in general (also not relying on pixel sizes with .wm_geometry()) (stop using black on white on grey)
 
 ## Bugs
