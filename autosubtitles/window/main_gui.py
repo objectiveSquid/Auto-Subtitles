@@ -35,6 +35,7 @@ class SettingsWindow:
         apply_callback: Callable[[], Any],
     ) -> None:
         self.lines = 0
+        self.apply_callback = apply_callback
         get_available_models()
         create_models_path()
 
@@ -111,7 +112,7 @@ class SettingsWindow:
 
         def update_font_size() -> None:
             self.settings.font_size = int(self.text_size_value.get().replace(",", "."))
-            self.__check_apply_button_color()
+            self.__check_button_colors()
 
         ttk.Spinbox(
             self.window,
@@ -128,7 +129,7 @@ class SettingsWindow:
             self.settings.alpha_value = float(
                 self.transparency_value.get().replace(",", ".")
             )
-            self.__check_apply_button_color()
+            self.__check_button_colors()
 
         tk.Label(
             self.window,
@@ -157,7 +158,7 @@ class SettingsWindow:
             )
             if self.settings.translation_language == "do not translate":
                 self.settings.translation_language = None
-            self.__check_apply_button_color()
+            self.__check_button_colors()
 
         tk.Label(
             self.window,
@@ -206,6 +207,16 @@ class SettingsWindow:
         )
         self.apply_button.pack(side=tk.RIGHT, anchor=tk.SE, pady=10)
 
+        # reset button
+        self.reset_button = tk.Button(
+            self.window,
+            text="Reset settings",
+            font=("Arial", 8),
+            command=self.__reset,
+            state=tk.DISABLED,
+        )
+        self.reset_button.pack(side=tk.LEFT, anchor=tk.SW, padx=10, pady=10)
+
         self.__check_model_download(self.selected_model)
 
     def __whitespace(self, size: int) -> None:
@@ -215,7 +226,12 @@ class SettingsWindow:
             font=("Arial", size),
         ).pack()
 
-    def __check_apply_button_color(self) -> None:
+    def __check_button_colors(self) -> None:
+        if self.settings == Settings():
+            self.reset_button["state"] = tk.DISABLED
+        else:
+            self.reset_button["state"] = tk.NORMAL
+
         if self.old_settings == self.settings:
             self.apply_button["state"] = tk.DISABLED
         else:
@@ -225,7 +241,7 @@ class SettingsWindow:
         if isinstance(modelname, tk.StringVar):
             modelname = modelname.get()
         self.settings.model_name = modelname
-        self.__check_apply_button_color()
+        self.__check_button_colors()
 
         if modelname in get_downloaded_models():
             self.download_model_warning.configure(text="")
@@ -248,6 +264,14 @@ class SettingsWindow:
             self.selected_model.set(self.model_select["values"][0])
 
         self.__check_model_download(self.selected_model)
+
+    def __reset(self) -> None:
+        self.settings = Settings()
+
+        self.window.destroy()
+        self.__init__(self.parent, self.settings, self.apply_callback)
+
+        self.__check_button_colors()
 
     def close(self) -> None:
         if self.settings != self.old_settings:

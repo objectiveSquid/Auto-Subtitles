@@ -1,6 +1,5 @@
 # Todo list
 ## Features
-  - allow reset button in settings
   - allow to delete models in settings
   - allow selecting sound input in settings
   - allow selecting translation model in settings
