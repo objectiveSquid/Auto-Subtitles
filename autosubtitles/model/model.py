@@ -117,19 +117,31 @@ def download_model(master: tk.Misc, link: str) -> None:
 
 
 @cachetools.cached({})
-def get_available_models() -> dict[str, list[ModelInfo]]:
+def get_available_models(*, no_ssl_verify: bool = False) -> dict[str, list[ModelInfo]]:
     models = {}
     latest_group = None
     recasepunc = False
 
     try:
         soup = bs4.BeautifulSoup(
-            requests.get("https://alphacephei.com/vosk/models").text, "html.parser"
+            requests.get(
+                "https://alphacephei.com/vosk/models", verify=not no_ssl_verify
+            ).text,
+            "html.parser",
         )
+    except requests.exceptions.SSLError as error:
+        if tk_messagebox.askyesno(
+            "Error downloading model list",
+            "There was an SSL error downloading the model list, would you like to try without verifying ssl certificates?",
+        ):
+            return get_available_models(no_ssl_verify=True)
+        exit(REQUEST_ERROR_EXIT_CODE)
     except requests.RequestException as error:
-        print(
-            f"Failed to download model list, please check your internet connection: {error}"
-        )
+        if tk_messagebox.askyesno(
+            "Error downloading model list",
+            f"There was an error downloading the model list: {error}\nWould you like to try again?",
+        ):
+            return get_available_models()
         exit(REQUEST_ERROR_EXIT_CODE)
 
     for line in soup.find_all("tr"):
