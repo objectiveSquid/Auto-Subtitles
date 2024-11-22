@@ -280,7 +280,7 @@ class SettingsWindow:
             self.window.master.attributes("-topmost", True)  # type: ignore
             exit_anyway = tk_messagebox.askyesno(
                 "You have unsaved changes!",
-                "You have unsaved changes in text size, are you sure you want to exit?",
+                "You have unsaved changes in settings, are you sure you want to exit?",
             )
             self.window.master.wm_deiconify()  # type: ignore
             if not exit_anyway:
