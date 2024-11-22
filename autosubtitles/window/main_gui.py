@@ -23,6 +23,7 @@ from typing import Callable, Literal, Any
 import tkinter.ttk as ttk
 import deep_translator
 import tkinter as tk
+import requests
 import copy
 import os
 
@@ -293,6 +294,19 @@ class SettingsWindow:
 
         self.apply_button["state"] = tk.DISABLED
 
+        if self.settings.translation_language != None:
+            try:
+                deep_translator.GoogleTranslator().translate(
+                    "Test text for checking the internet connection.",
+                    target=self.settings.translation_language,
+                )
+            except requests.RequestException:
+                tk_messagebox.showerror(
+                    "Connection error",
+                    "Could not connect to google translate, translation language set to 'Do not translate'.",
+                )
+                self.settings.translation_language = None
+
         if self.selected_model.get() not in get_downloaded_models():
             download_model(self.window, self.settings.model_info.link)
 
@@ -477,7 +491,24 @@ class SubtitleWindow:
             if new_text != old_text:
                 self.text_widget.delete("1.0", tk.END)
                 if self.settings.translation_language != None:
-                    self.text_widget.insert("1.0", self.settings.translator.translate(new_text))  # type: ignore
+                    try:
+                        self.text_widget.insert("1.0", self.settings.translator.translate(new_text))  # type: ignore
+                    except requests.RequestException as error:
+                        tk_messagebox.showerror(
+                            "Translation error",
+                            "There was a connection error translating the text: "
+                            + str(error)
+                            + "\nStopping translation for now.",
+                        )
+                        self.settings.translation_language = None
+                    except Exception as error:
+                        tk_messagebox.showerror(
+                            "Translation error",
+                            "There was an error translating the text: "
+                            + str(error)
+                            + "\nStopping translation for now.",
+                        )
+                        self.settings.translation_language = None
                 else:
                     self.text_widget.insert("1.0", new_text)
                 self.__check_overflow()
