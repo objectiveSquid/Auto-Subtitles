@@ -25,7 +25,7 @@ class ProgressWindow:
         self.window = tk.Toplevel(master, background=BACKGROUND_GREY)
         self.window.wm_geometry("500x300")
         self.window.wm_title(f"Loading model {modelname}")
-        seticon(self.window, resourcepath("settings.png"))
+        seticon(self.window, resourcepath("download.png"))
 
         self.loading_label = tk.Label(
             self.window, text=f"Downloading model {modelname}", font=("Arial", 15)
