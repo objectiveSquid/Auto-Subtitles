@@ -289,7 +289,7 @@ class SettingsWindow:
 
         self.window.destroy()
 
-    def apply(self) -> tuple[SubtitleGenerator | None, int, float, str | None]:
+    def apply(self) -> tuple[SubtitleGenerator | None, Settings]:
         new_generator = None
 
         self.apply_button["state"] = tk.DISABLED
@@ -319,12 +319,7 @@ class SettingsWindow:
 
         write_settings(self.settings)
 
-        return (
-            new_generator,
-            self.settings.font_size,
-            self.settings.alpha_value,
-            self.settings.translation_language,
-        )
+        return new_generator, self.settings
 
 
 class SubtitleWindow:
@@ -400,10 +395,8 @@ class SubtitleWindow:
         )
 
     def __apply_settings(self) -> None:
-        new_generator, new_font_size, new_alpha_value, new_translation_language = (
-            self.settings_window.apply()
-        )
-        self.settings.translation_language = new_translation_language
+        new_generator, new_settings = self.settings_window.apply()
+        self.settings = new_settings
 
         if new_generator != None:
             self.subtitle_generator.stop()
@@ -411,9 +404,9 @@ class SubtitleWindow:
             self.subtitle_generator = new_generator
             self.subtitle_generator.start()
 
-        set_font_size(self.text_widget, new_font_size)
+        set_font_size(self.text_widget, self.settings.font_size)
 
-        self.root.wm_attributes("-alpha", new_alpha_value)
+        self.root.wm_attributes("-alpha", self.settings.alpha_value)
 
     def __button(
         self,
