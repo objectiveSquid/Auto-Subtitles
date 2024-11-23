@@ -46,6 +46,7 @@ class SettingsWindow:
         self.window = tk.Toplevel(self.parent, background=BACKGROUND_GREY)
         self.window.wm_geometry("400x600")
         self.window.wm_resizable(False, False)
+        self.window.wm_protocol("WM_DELETE_WINDOW", self.close)
 
         self.window.wm_title("Auto Subtitles Settings")
         seticon(self.window, resourcepath("settings.png"))
