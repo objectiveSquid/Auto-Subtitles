@@ -127,11 +127,20 @@ class SettingsWindow:
 
         self.__whitespace(10)
 
-        def update_transparency() -> None:
-            self.settings.alpha_value = float(
-                self.transparency_value.get().replace(",", ".")
-            )
+        def update_alpha_value() -> None:
+            self.settings.alpha_value = int(self.alpha_value.get().rstrip("%")) / 100
             self.__check_button_colors()
+
+            self.alpha_value.set(f"{int(self.settings.alpha_value * 100)}%")
+
+        def validate_and_update_alpha_value(*args: Any) -> None:
+            try:
+                value = self.alpha_value.get().rstrip("%")
+                if value:
+                    value = min(100, max(10, int(value)))
+                    self.alpha_value.set(f"{value}%")
+            except ValueError:
+                self.alpha_value.set(f"{int(self.settings.alpha_value * 100)}%")
 
         tk.Label(
             self.window,
@@ -139,17 +148,18 @@ class SettingsWindow:
             foreground="#FFFFFF",
             text="Subtitle window transparency",
         ).pack(fill=tk.X)
-        self.transparency_value = tk.StringVar(
-            self.window, value=str(self.settings.alpha_value)
-        )
 
+        self.alpha_value = tk.StringVar(
+            self.window, value=f"{int(self.settings.alpha_value * 100)}%"
+        )
+        self.alpha_value.trace_add("write", validate_and_update_alpha_value)
         ttk.Spinbox(
             self.window,
-            textvariable=self.transparency_value,
-            from_=0,
-            to=1,
-            increment=0.1,
-            command=update_transparency,
+            from_=10,
+            to=100,
+            increment=10,
+            textvariable=self.alpha_value,
+            command=update_alpha_value,
         ).pack()
 
         self.__whitespace(10)
@@ -269,6 +279,8 @@ class SettingsWindow:
 
     def __reset(self) -> None:
         self.settings = Settings()
+
+        self.apply_callback()
 
         self.window.destroy()
         self.__init__(self.parent, self.settings, self.apply_callback)
