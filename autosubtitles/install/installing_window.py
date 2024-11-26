@@ -1,3 +1,5 @@
+from window.utils_extern import normalize_window_size
+
 from typing import Callable
 import tkinter as tk
 import io
@@ -9,7 +11,9 @@ class InstallRequirementsWindow:
 
         self.window = tk.Tk()
         self.window.configure(background="#333333")
-        self.window.wm_geometry("500x300")
+        self.window.wm_geometry(
+            normalize_window_size(self.window, (500, 300, None, None))
+        )
         self.window.wm_title("Installing requirements")
         self.window.wm_resizable(False, False)
 

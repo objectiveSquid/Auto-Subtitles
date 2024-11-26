@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .utils_extern import normalize_window_size
 from misc.path import resourcepath
 from ._utils import seticon
 
@@ -23,7 +24,9 @@ class ProgressWindow:
         self.modelname = modelname
 
         self.window = tk.Toplevel(master, background=BACKGROUND_GREY)
-        self.window.wm_geometry("500x300")
+        self.window.wm_geometry(
+            normalize_window_size(self.window, (500, 300, None, None))
+        )
         self.window.wm_title(f"Loading model {modelname}")
         seticon(self.window, resourcepath("download.png"))
 

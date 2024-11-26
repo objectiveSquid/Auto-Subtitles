@@ -11,6 +11,7 @@ from generator.subtitle_generator import SubtitleGenerator
 from ._utils import seticon
 from .misc import BACKGROUND_GREY
 
+from .utils_extern import normalize_window_size
 import tkinter.messagebox as tk_messagebox
 import tkinter.ttk as ttk
 import tkinter as tk
@@ -24,7 +25,9 @@ class StartWindow:
         create_models_path()
 
         self.window = tk.Toplevel(background=BACKGROUND_GREY)
-        self.window.wm_geometry("300x200")
+        self.window.wm_geometry(
+            normalize_window_size(self.window, (300, 200, None, None))
+        )
 
         tk_messagebox.showinfo(
             "Select first model",

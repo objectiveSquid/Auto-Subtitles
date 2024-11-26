@@ -16,6 +16,7 @@ from ._utils import combobox_ignore_input, set_font_size, seticon
 from generator.subtitle_generator import SubtitleGenerator
 from .misc import BUTTON_GREY, BUTTON_RED, BACKGROUND_GREY
 from misc.settings import write_settings, Settings
+from .utils_extern import normalize_window_size
 
 import PIL.Image as Image, PIL.ImageTk as ImageTk
 import tkinter.messagebox as tk_messagebox
@@ -44,7 +45,9 @@ class SettingsWindow:
         self.settings = copy.copy(settings)
         self.parent = root
         self.window = tk.Toplevel(self.parent, background=BACKGROUND_GREY)
-        self.window.wm_geometry("400x600")
+        self.window.wm_geometry(
+            normalize_window_size(self.window, (400, 600, None, None))
+        )
         self.window.wm_resizable(False, False)
         self.window.wm_protocol("WM_DELETE_WINDOW", self.close)
 
@@ -55,7 +58,16 @@ class SettingsWindow:
             self.window,
             background=BACKGROUND_GREY,
             foreground="#FFFFFF",
+            text="General",
+            font=("Arial", 15),
+        ).pack(fill=tk.X)
+
+        tk.Label(
+            self.window,
+            background=BACKGROUND_GREY,
+            foreground="#FFFFFF",
             text="Select model",
+            font=("Arial", 11),
         ).pack(fill=tk.X)
 
         self.selected_model_category = tk.StringVar(
@@ -102,11 +114,60 @@ class SettingsWindow:
         )
         self.download_model_warning.pack()
 
+        def update_translation_language() -> None:
+            self.settings.translation_language = (
+                self.translation_language.get().casefold()
+            )
+            if self.settings.translation_language == "do not translate":
+                self.settings.translation_language = None
+            self.__check_button_colors()
+
+        tk.Label(
+            self.window,
+            background=BACKGROUND_GREY,
+            foreground="#FFFFFF",
+            text="Translation language",
+            font=("Arial", 11),
+        ).pack(fill=tk.X)
+        self.translation_lang = tk.StringVar(
+            self.window, value=str(self.settings.translation_language)
+        )
+
+        self.translation_language = tk.StringVar(
+            self.window,
+            value=(
+                self.settings.translation_language.capitalize()
+                if self.settings.translation_language != None
+                else "Do not translate"
+            ),
+        )
+        translation_language_select = ttk.Combobox(
+            self.window,
+            textvariable=self.translation_language,
+            values=["Do not translate"] + [lang.capitalize() for lang in deep_translator.GoogleTranslator().get_supported_languages()],  # type: ignore
+        )
+        combobox_ignore_input(translation_language_select)
+        translation_language_select.bind(
+            "<<ComboboxSelected>>", lambda event: update_translation_language()
+        )
+        translation_language_select.pack()
+
+        self.__whitespace(10)
+
+        tk.Label(
+            self.window,
+            background=BACKGROUND_GREY,
+            foreground="#FFFFFF",
+            text="Window",
+            font=("Arial", 15),
+        ).pack(fill=tk.X)
+
         tk.Label(
             self.window,
             background=BACKGROUND_GREY,
             foreground="#FFFFFF",
             text="Subtitle font size",
+            font=("Arial", 11),
         ).pack(fill=tk.X)
         self.text_size_value = tk.StringVar(
             self.window, value=str(self.settings.font_size)
@@ -147,6 +208,7 @@ class SettingsWindow:
             background=BACKGROUND_GREY,
             foreground="#FFFFFF",
             text="Subtitle window transparency",
+            font=("Arial", 11),
         ).pack(fill=tk.X)
 
         self.alpha_value = tk.StringVar(
@@ -161,45 +223,6 @@ class SettingsWindow:
             textvariable=self.alpha_value,
             command=update_alpha_value,
         ).pack()
-
-        self.__whitespace(10)
-
-        def update_translation_language() -> None:
-            self.settings.translation_language = (
-                self.translation_language.get().casefold()
-            )
-            if self.settings.translation_language == "do not translate":
-                self.settings.translation_language = None
-            self.__check_button_colors()
-
-        tk.Label(
-            self.window,
-            background=BACKGROUND_GREY,
-            foreground="#FFFFFF",
-            text="Translation language",
-        ).pack(fill=tk.X)
-        self.translation_lang = tk.StringVar(
-            self.window, value=str(self.settings.translation_language)
-        )
-
-        self.translation_language = tk.StringVar(
-            self.window,
-            value=(
-                self.settings.translation_language.capitalize()
-                if self.settings.translation_language != None
-                else "Do not translate"
-            ),
-        )
-        translation_language_select = ttk.Combobox(
-            self.window,
-            textvariable=self.translation_language,
-            values=["Do not translate"] + [lang.capitalize() for lang in deep_translator.GoogleTranslator().get_supported_languages()],  # type: ignore
-        )
-        combobox_ignore_input(translation_language_select)
-        translation_language_select.bind(
-            "<<ComboboxSelected>>", lambda event: update_translation_language()
-        )
-        translation_language_select.pack()
 
         # exit button
         tk.Button(
@@ -359,7 +382,9 @@ class SubtitleWindow:
         # continued - subtitle window initialization
         target_x = round((self.root.winfo_screenwidth() / 2) - (width / 2))
         target_y = round(self.root.winfo_screenheight() - (height * 1.5))
-        self.root.wm_geometry(f"{width}x{height}+{target_x}+{target_y}")
+        self.root.wm_geometry(
+            normalize_window_size(self.root, (width, height, target_x, target_y))
+        )
         self.root.wm_overrideredirect(True)
         self.root.wm_resizable(False, False)
 
